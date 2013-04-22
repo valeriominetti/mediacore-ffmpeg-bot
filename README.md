@@ -5,8 +5,12 @@ mediacore-ffmpeg-bot is a simple php daemon. It watches mediacore media tables a
 When an unencoded one is found it invokes ffmpeg to encode it in an h264 one. then it creates the needed media_files
 in mediacore db and set the original media as encoded.
 
+Features:
+* fill media_file metadata as size and bitrate
+* send email via php mail to media author when encoding is done
+* upstart script for ubuntu/debian distros
+
 Many todos:
 * multiple encoding profiles
 * script parametrization ( remove all hardcoded paths )
-* send email to author when encoding is done
 * ...
