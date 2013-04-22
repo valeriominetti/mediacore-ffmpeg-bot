@@ -12,7 +12,7 @@ while(true){
 	    die('Could not connect: ' . mysql_error());
 	}
 	mysql_select_db('mediacore', $link);
-	$select_query = "select media.id as mediaid,media_files.id,media_files.type,container,unique_id,media_files.storage_id from media_files left join media on (media_files.media_id = media.id) where (media.encoded=0) and (media_files.storage_id=1);";
+	$select_query = "select media.author_email, media.id as mediaid,media_files.id,media_files.type,container,unique_id,media_files.storage_id from media_files left join media on (media_files.media_id = media.id) where (media.encoded=0) and (media_files.storage_id=1);";
 	$unencoded_media = mysql_query($select_query) or die(mysql_error());
 	//echo 'Connected successfully';
 
@@ -25,6 +25,7 @@ while(true){
 
 	    $media_file_name= $row['unique_id'];
 	    $media_id = $row['mediaid'];
+	    $author_email = $row['author_email'];
 	    // insert new media file into mediacore tables
 	    // get width & height
 		exec("ffmpeg -i /opt/mediacore/data/media/".$media_file_name." 2>&1 |grep '\[PAR'", $out);
@@ -66,6 +67,14 @@ while(true){
 	    $update_query1="update mediacore.media set encoded='1' where id='".$media_id."';";
 	    $result = mysql_query($update_query) or die(mysql_error());
 	    $result = mysql_query($update_query1) or die(mysql_error());
+
+	    // send email to media owner
+	    $to = $author_email;
+	    $subject = "Mediacore event: codifica video terminata";
+	    $message = "Buongiorno, \n la codifica del video \n '".$media_file_name."' da lei caricato e' terminata con successo.";
+	    $from = "mediacore@didattica.unimib.it";
+	    $headers = "From:" . $from;
+	    mail($to,$subject,$message,$headers);
 
 	}
 	
