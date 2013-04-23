@@ -66,7 +66,7 @@ while(true){
 	    // transcode file
 	    // TODO: support for multiple profiles
 	    echo "Starting ffmpeg with ".$media_file_name."...\n\n";
-	    echo shell_exec("ffmpeg -y -i ".$mediacore_path.$media_file_name." -pass 1  -vcodec libx264  -vpre medium -b ".$encoded_bitrate." -s ".$encoded_width."x".$encoded_height." -acodec libmp3lame -ac 2 -ar 48000 -ab 128k   ".$mediacore_path.$encoded_file_name." </dev/null >/dev/null 2>/var/log/ffmpeg.log ");
+	    echo shell_exec("ffmpeg -y -i ".$mediacore_path.$media_file_name." -pass 1  -vcodec libx264  -vpre slow -b:v ".$encoded_bitrate." -s ".$encoded_width."x".$encoded_height."  -acodec libvo_aacenc -ac 2 -ar 44.1k -b:a 128k ".$mediacore_path.$encoded_file_name." </dev/null >/dev/null 2>/var/log/ffmpeg.log ");
 	    echo "Encoding Done.\n";
 
 	    // insert media file in mediacore db
