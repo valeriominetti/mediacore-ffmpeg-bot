@@ -7,7 +7,7 @@ in mediacore db and set the original media as encoded.
 
 Install:
 * save bot file in /opt ( if you want to change this remember to change hardcoded paths )
-* save .conf file in /etc/init/
+* save .conf file in /etc/init/ ( this also has an hardcoded path so remember to review it )
 * start ffmpeg bot service with "start ffmpeg-bot"
 
 

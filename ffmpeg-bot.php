@@ -3,15 +3,32 @@
 	// Code by Valerio Minetti 	
 	// valerio.minetti@gmail.com
 
+	// =====================================
+	// Configuration: 
+	// edit this to adapt bot to your environment/paths
+	// =====================================
+	$db_host="localhost";
+	$db_user="root";
+	$db_password="root";
+	$db_name="mediacore";
+	// Mediacore Media directory, note the trailing slash
+	$mediacore_path="/opt/mediacore/data/media/"; 
+	// Bot sleep duration in secs between checks
+	$sleep_duration= 10;
+	// End Of Configuration
+	// =====================================
+	
+	
+	
 	// Bot Loop
 
 while(true){
 	// Db connect (change your connection credentials)
-	$link = mysql_connect('localhost', 'root', 'root');
+	$link = mysql_connect($db_host, $db_user, $db_password);
 	if (!$link) {
 	    die('Could not connect: ' . mysql_error());
 	}
-	mysql_select_db('mediacore', $link);
+	mysql_select_db($db_name, $link);
 	$select_query = "select media.author_email, media.id as mediaid,media_files.id,media_files.type,container,unique_id,media_files.storage_id from media_files left join media on (media_files.media_id = media.id) where (media.encoded=0) and (media_files.storage_id=1);";
 	$unencoded_media = mysql_query($select_query) or die(mysql_error());
 	//echo 'Connected successfully';
@@ -28,12 +45,12 @@ while(true){
 	    $author_email = $row['author_email'];
 	    // insert new media file into mediacore tables
 	    // get width & height
-		exec("ffmpeg -i /opt/mediacore/data/media/".$media_file_name." 2>&1 |grep '\[PAR'", $out);
+		exec("ffmpeg -i ".$mediacore_path.$media_file_name." 2>&1 |grep '\[PAR'", $out);
                 $dimension = explode(" ", trim(current(explode('[PAR', current($out)))))[6];
 		$width= explode("x",$dimension)[0];
 		$height= explode("x",$dimension)[1];
 	    // get bitrate
-		exec("ffmpeg -i /opt/mediacore/data/media/".$media_file_name." 2>&1 |grep 'bitrate:'", $out1);
+		exec("ffmpeg -i ".$mediacore_path.$media_file_name." 2>&1 |grep 'bitrate:'", $out1);
 		$brate = trim(str_replace('bitrate:', NULL, end(explode(',', current($out1)))));
 		//echo "bitrate";
 		//print_r($brate);
@@ -49,7 +66,7 @@ while(true){
 	    // transcode file
 	    // TODO: support for multiple profiles
 	    echo "Starting ffmpeg with ".$media_file_name."...\n\n";
-	    echo shell_exec("ffmpeg -y -i /opt/mediacore/data/media/".$media_file_name." -pass 1  -vcodec libx264  -vpre medium -b ".$encoded_bitrate." -s ".$encoded_width."x".$encoded_height." -acodec libmp3lame -ac 2 -ar 48000 -ab 128k   /opt/mediacore/data/media/".$encoded_file_name." </dev/null >/dev/null 2>/var/log/ffmpeg.log ");
+	    echo shell_exec("ffmpeg -y -i ".$mediacore_path.$media_file_name." -pass 1  -vcodec libx264  -vpre medium -b ".$encoded_bitrate." -s ".$encoded_width."x".$encoded_height." -acodec libmp3lame -ac 2 -ar 48000 -ab 128k   ".$mediacore_path.$encoded_file_name." </dev/null >/dev/null 2>/var/log/ffmpeg.log ");
 	    echo "Encoding Done.\n";
 
 	    // insert media file in mediacore db
@@ -62,7 +79,7 @@ while(true){
 	    $result = mysql_query($select_query) or die(mysql_error());
 	    $new_id = mysql_fetch_assoc($result);
 	    // rename and update transcoded media file and db row
-	    rename("/opt/mediacore/data/media/".$encoded_file_name, "/opt/mediacore/data/media/".$new_id['id']."-".$encoded_file_name );
+	    rename($mediacore_path.$encoded_file_name, $mediacore_path.$new_id['id']."-".$encoded_file_name );
 	    $update_query= "update mediacore.media_files set unique_id='".$new_id['id']."-".$encoded_file_name."' where id='".$new_id['id']."';";
 	    $update_query1="update mediacore.media set encoded='1' where id='".$media_id."';";
 	    $result = mysql_query($update_query) or die(mysql_error());
@@ -81,6 +98,6 @@ while(true){
 	mysql_close($link);
 
 	// Sleep till next check
-	sleep(10);
+	sleep($sleep_duration);
 }
 ?>
