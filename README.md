@@ -20,3 +20,5 @@ Many todos:
 * multiple encoding profiles
 * script parametrization ( remove all hardcoded paths )
 * ...
+
+**Donations** *BTC Wallet* 1CgtHL3LpTBacZGnrsGjkdWoozk3cE4mhy
