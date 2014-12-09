@@ -70,7 +70,7 @@ while(true){
 	    echo "Encoding Done.\n";
 
 	    // insert media file in mediacore db
-	    $insert_query="insert into mediacore.media_files ( media_id, storage_id, display_name, unique_id,size, created_on,modified_on,bitrate, width, height, type, container ) values ('".$media_id."','1','".$encoded_file_name."','".$encoded_file_name."','".filesize("/opt/mediacore/data/media/". $encoded_file_name)."','','','".$encoded_bitrate."','".$encoded_width."','".$encoded_height."', 'video', 'mp4')";
+	    $insert_query="insert into mediacore.media_files ( media_id, storage_id, display_name, unique_id,size, created_on,modified_on,bitrate, width, height, type, container ) values ('".$media_id."','1','".$encoded_file_name."','".$encoded_file_name."','".filesize($mediacore_path. $encoded_file_name)."','','','".$encoded_bitrate."','".$encoded_width."','".$encoded_height."', 'video', 'mp4')";
 	    $result = mysql_query($insert_query) or die(mysql_error());
 
 	    // TODO: figure out media_file id prior db insert, avoiding update
