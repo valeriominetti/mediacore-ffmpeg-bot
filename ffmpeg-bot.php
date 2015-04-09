@@ -14,7 +14,9 @@
 	// Mediacore Media directory, note the trailing slash
 	$mediacore_path="/opt/mediacore/data/media/"; 
 	// Bot sleep duration in secs between checks
-	$sleep_duration= 10;
+    $sleep_duration= 10;
+    // Executable
+    $exec_cmd="ffmpeg" // must be "avconv" on Ubuntu 14.04
 	// End Of Configuration
 	// =====================================
 	
@@ -45,12 +47,12 @@ while(true){
 	    $author_email = $row['author_email'];
 	    // insert new media file into mediacore tables
 	    // get width & height
-		exec("ffmpeg -i ".$mediacore_path.$media_file_name." 2>&1 |grep '\[PAR'", $out);
+		exec($exec_cmd." -i ".$mediacore_path.$media_file_name." 2>&1 |grep '\[PAR'", $out);
                 $dimension = explode(" ", trim(current(explode('[PAR', current($out)))))[6];
 		$width= explode("x",$dimension)[0];
 		$height= explode("x",$dimension)[1];
 	    // get bitrate
-		exec("ffmpeg -i ".$mediacore_path.$media_file_name." 2>&1 |grep 'bitrate:'", $out1);
+		exec($exec_cmd." -i ".$mediacore_path.$media_file_name." 2>&1 |grep 'bitrate:'", $out1);
 		$brate = trim(str_replace('bitrate:', NULL, end(explode(',', current($out1)))));
 		//echo "bitrate";
 		//print_r($brate);
@@ -65,8 +67,8 @@ while(true){
 
 	    // transcode file
 	    // TODO: support for multiple profiles
-	    echo "Starting ffmpeg with ".$media_file_name."...\n\n";
-	    echo shell_exec("ffmpeg -y -i ".$mediacore_path.$media_file_name."  -vcodec libx264  -vpre slow -b:v ".$encoded_bitrate." -s ".$encoded_width."x".$encoded_height."  -acodec libvo_aacenc -ac 2 -ar 44.1k -b:a 128k ".$mediacore_path.$encoded_file_name." </dev/null >/dev/null 2>/var/log/ffmpeg.log ");
+	    echo "Starting ".$exec_cmd." with ".$media_file_name."...\n\n";
+	    echo shell_exec($exec_cmd." -y -i ".$mediacore_path.$media_file_name."  -vcodec libx264  -vpre slow -b:v ".$encoded_bitrate." -s ".$encoded_width."x".$encoded_height."  -acodec libvo_aacenc -ac 2 -ar 44.1k -b:a 128k ".$mediacore_path.$encoded_file_name." </dev/null >/dev/null 2>/var/log/".$exec_cmd.".log ");
 	    echo "Encoding Done.\n";
 
 	    // insert media file in mediacore db
